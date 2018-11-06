@@ -1,0 +1,122 @@
+# depslib dependency file v1.0
+1517959170 source:c:\users\alien\downloads\ioctlbf-master\src\getopt.c
+	<config.h>
+	<stdio.h>
+	<string.h>
+	<gnu-versions.h>
+	<stdlib.h>
+	<unistd.h>
+	<unixlib.h>
+	<string.h>
+	<libintl.h>
+	<wchar.h>
+	"getopt.h"
+	<string.h>
+
+1489584810 c:\users\alien\downloads\ioctlbf-master\src\inc\getopt.h
+	<ctype.h>
+
+1518925768 source:c:\users\alien\downloads\ioctlbf-master\src\ihm.c
+	<stdio.h>
+	<stdlib.h>
+	"ioctl_manipulation.h"
+
+1489584810 c:\users\alien\downloads\ioctlbf-master\src\inc\ioctl_manipulation.h
+	<WINDOWS.h>
+
+1489584810 source:c:\users\alien\downloads\ioctlbf-master\src\ioctl_manipulation.c
+	<stdio.h>
+	<stdlib.h>
+	<WINDOWS.h>
+	"ioctl_manipulation.h"
+
+1489584810 source:c:\users\alien\downloads\ioctlbf-master\src\rng.c
+	<stdio.h>
+
+1518897558 source:c:\users\alien\downloads\ioctlbf-master\src\utilities.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdarg.h>
+
+1518906236 source:c:\users\alien\downloads\ioctlbf-master\src\ioctl_bf.c
+	<stdio.h>
+	<stdlib.h>
+	<wchar.h>
+	<time.h>
+	<WINDOWS.h>
+	<Wincrypt.h>
+	<winioctl.h>
+	<winerror.h>
+	"getopt.h"
+	"ioctl_manipulation.h"
+	"ihm.h"
+	"utilities.h"
+
+1489588410 c:\users\alien\downloads\ioctlbf-master\src\inc\ihm.h
+
+1489588410 c:\users\alien\downloads\ioctlbf-master\src\inc\utilities.h
+
+1517962770 source:d:\dropbox\win\projetos\ioctl\getopt.c
+	<config.h>
+	<stdio.h>
+	<string.h>
+	<gnu-versions.h>
+	<stdlib.h>
+	<unistd.h>
+	<unixlib.h>
+	<string.h>
+	<libintl.h>
+	<wchar.h>
+	"getopt.h"
+	<string.h>
+
+1541473580 source:d:\dropbox\win\projetos\ioctl\ihm.c
+	<stdio.h>
+	<stdlib.h>
+	"ioctl_manipulation.h"
+
+1541473366 source:d:\dropbox\win\projetos\ioctl\ioctl_bf.c
+	<stdio.h>
+	<stdlib.h>
+	<wchar.h>
+	<time.h>
+	"getopt.h"
+	"ioctl_manipulation.h"
+	"ihm.h"
+	"utilities.h"
+
+1528515400 source:d:\dropbox\win\projetos\ioctl\ioctl_manipulation.c
+	<stdio.h>
+	<stdlib.h>
+	<WINDOWS.h>
+	"ioctl_manipulation.h"
+
+1489588410 source:d:\dropbox\win\projetos\ioctl\rng.c
+	<stdio.h>
+
+1541465456 source:d:\dropbox\win\projetos\ioctl\utilities.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdarg.h>
+	"utilities.h"
+
+1489588410 d:\dropbox\win\projetos\ioctl\inc\getopt.h
+	<ctype.h>
+
+1538439272 d:\dropbox\win\projetos\ioctl\inc\ioctl_manipulation.h
+	"utilities.h"
+
+1489588410 d:\dropbox\win\projetos\ioctl\inc\ihm.h
+
+1541473996 d:\dropbox\win\projetos\ioctl\inc\utilities.h
+	<winsock2.h>
+	<WINDOWS.h>
+	<Wincrypt.h>
+	<winioctl.h>
+	<winerror.h>
+
+1537929941 d:\dropbox\win\projetos\ioctl\sock.h
+	<winsock2.h>
+
