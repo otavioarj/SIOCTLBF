@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
         {
 
 
-            myprintf("[~] Trying null pointers\n");
+            myprintf("[~] Trying null pointers\r");
             status = DeviceIoControl(deviceHandle,
                                      currentIoctl,
                                      NULL,
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
         }
 
         // Determine min/max input buffer size
-        myprintf("[~] Searching min buff\n");
+        myprintf("[~] Searching min buff |[%p]\t\t\r",currentIoctl);
 
         for(j=4; j<MAX_BUFSIZE ; j<<=1)
         {
@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
         else
         {
 
-            myprintf("[~] Searching max buff\n");
+            myprintf("[~] Searching max buff |[%p]\t\t\r",currentIoctl);
 
             for(j=MAX_BUFSIZE; j>=listIoctls->minBufferLength; j>>=1)
             {
