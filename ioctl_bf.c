@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     MYWORD  beginIoctl=0, endIoctl=0, currentIoctl=0;
     DWORD  status=0, errorCode=0;
     DWORD  nbBytes = 0;
-
+    BYTE *jamboBuff;
     pIOCTLlist listIoctls 	 = NULL;
     pIOCTLlist posListIoctls = NULL;
 
@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
             myprintf("[0x%08x] Checking for trivial kernel overflows\n|-> [...",
                      posListIoctls->IOCTL);
 
-            BYTE *jamboBuff=(BYTE *)malloc(2*MAX_BUFSIZE);
+            jamboBuff=(BYTE *)malloc(2*MAX_BUFSIZE);
             memset(jamboBuff, 0x41, 2*MAX_BUFSIZE);
             for(i=1024; i<=2*MAX_BUFSIZE; i<<=1)
             {
@@ -484,7 +484,7 @@ int main(int argc, char *argv[])
                 nbBytes = 0;
                 memset(bufOutput,0, MAX_BUFSIZE);
             }
-
+            free(jamboBuff);
             myprintf("]\n[*] End of Stage 1.\n");
         }
 
