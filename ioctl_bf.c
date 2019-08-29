@@ -11,61 +11,32 @@
 // Program include ------------------------------------------------------------
 #include "getopt.h"
 //#include "rng.c"
-#include "ioctl_manipulation.h"
-#include "ihm.h"
 #include "utilities.h"
 
-#ifdef _WIN64
-#define MYWORD DWORD64
-#warning "64 BITS"
-#else
-#define MYWORD DWORD
-#warning "32 BITS"
-#endif // _WIN64
-
-// Parameters -----------------------------------------------------------------
-#define MAX_BUFSIZE 4096		// Max length for input buffer
-#define INVALID_BUF_ADDR_ATTEMPTS	5
-
-// Junk data used for fuzzing -------------------------------------------------
-MYWORD tableDwords[sizeof(MYWORD)];
-
-int sckt=0;
+// Globals
+short int displayerrflg = 0;
+short int pausebuff=0;
 short int quietflg=0;
 
+
 #ifdef _WIN64
+MYWORD tableDwords[sizeof(MYWORD)];
 MYWORD invalidAddresses[] = { 0xFFFFFFFF00000000, 0x0000000010000,0x0};
+MYWORD FuzzConstants[] = {	0x00000000, 0x00000001, 0x00000004, 0xFFFFFFFFFFFFFFFF,
+                            0x0000000010000000, 0xFFFFFFFF00000000, 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFF0,
+                            0xFFFFFFFFFFFFFFFC, 0x7000000000000000, 0x7FFEFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF,
+                            0x8000000000000000,0x4141414141414141, 0x0041004100410041,(MYWORD)tableDwords
+                         };
 #else
+MYWORD tableDwords[sizeof(WORD)];
 MYWORD invalidAddresses[] = { 0xFFFF0000, 0x00001000, 0x0};
+MYWORD FuzzConstants[] = {	0x00000000, 0x00000001, 0x00000004, 0xFFFFFFFF,
+                            0x00001000, 0xFFFF0000, 0xFFFFFFFE, 0xFFFFFFF0,
+                            0xFFFFFFFC, 0x70000000, 0x7FFEFFFF, 0x7FFFFFFF,
+                            0x80000000, 0x41414141, 0x00410041, (DWORD)tableDwords
+                         };
 #endif // _WIN64
 
-BOOL cont;
-
-// Initialize junk data -------------------------------------------------------
-void initializeJunkData()
-{
-    int i;
-    for(i=0; i<sizeof(MYWORD); i++)
-    {
-        tableDwords[i] = ~0; // full word :)
-        tableDwords[i] <<= i*sizeof(MYWORD);
-    }
-}
-
-
-// Handler for the CTRL-C signal, used to stop an action without quitting -----
-BOOL CtrlHandler(DWORD fdwCtrlType)
-{
-    switch( fdwCtrlType )
-    {
-    case CTRL_C_EVENT:
-    case CTRL_CLOSE_EVENT:
-        cont = FALSE;
-        return TRUE;
-    default:
-        return FALSE;
-    }
-}
 
 
 // Main function --------------------------------------------------------------
@@ -80,12 +51,12 @@ int main(int argc, char *argv[])
     char *host               = NULL;
     short int singleflg  = 0;
     short int errflg 	 = 0;
-    short int displayerrflg = 0;
+
     short int filteralwaysok = 0;
     short int brute=0;
     short int nonull=0;
     short int stage=0;
-    short int pausebuff=0;
+
     short int port=0;
     short int timec=0;
     HANDLE deviceHandle;
@@ -101,8 +72,6 @@ int main(int argc, char *argv[])
     short int c=0, i=0,j=0;
     MYWORD fuzzData;
 
-    BYTE  bufInput[MAX_BUFSIZE];
-    BYTE  bufOutput[MAX_BUFSIZE];
     size_t randomLength;
     HCRYPTPROV   hCryptProv;
     time_t rawtime;
@@ -110,21 +79,6 @@ int main(int argc, char *argv[])
     short int ptm=0,ip[4];
 
 
-
-#ifdef _WIN64
-    MYWORD FuzzConstants[] = {	0x00000000, 0x00000001, 0x00000004, 0xFFFFFFFFFFFFFFFF,
-                                0x0000000010000000, 0xFFFFFFFF00000000, 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFF0,
-                                0xFFFFFFFFFFFFFFFC, 0x7000000000000000, 0x7FFEFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF,
-                                0x8000000000000000,0x4141414141414141, 0x0041004100410041,(MYWORD)tableDwords
-                             };
-#else
-
-    MYWORD FuzzConstants[] = {	0x00000000, 0x00000001, 0x00000004, 0xFFFFFFFF,
-                                0x00001000, 0xFFFF0000, 0xFFFFFFFE, 0xFFFFFFF0,
-                                0xFFFFFFFC, 0x70000000, 0x7FFEFFFF, 0x7FFFFFFF,
-                                0x80000000, 0x41414141, 0x00410041, (DWORD)tableDwords
-                             };
-#endif // _WIN64
 
 
     // Parse options from command-line
@@ -257,7 +211,7 @@ int main(int argc, char *argv[])
 
 
     // Open handle to the device
-    myprintf("[*] Open handle to the device %s ... \n", deviceName);
+    myprintf("[*] Openning handle to the device %s ... \n", deviceName);
     deviceHandle = CreateFile((HANDLE)deviceName,
                               GENERIC_READ | GENERIC_WRITE,
                               0,
@@ -297,7 +251,7 @@ int main(int argc, char *argv[])
                  beginIoctl, endIoctl);
     myprintf("  Filter mode           : ");
     if(filteralwaysok)
-        myprintf("Filter codes that return true for all buffer sizes\n");
+        myprintf("Filtering codes that return true for all buffer sizes\n");
     else
         myprintf("Filter disabled\n");
 
@@ -414,119 +368,23 @@ int main(int argc, char *argv[])
                 continue;
         }
 
-        // Determine min/max input buffer size
-        myprintf("[~] Searching min buff |[%p]\t\t\r",currentIoctl);
-
-        for(j=4; j<MAX_BUFSIZE ; j<<=1)
-        {
-            status = DeviceIoControl(deviceHandle,
-                                     currentIoctl,
-                                     &bufInput,
-                                     j,
-                                     &bufOutput,
-                                     j,
-                                     &nbBytes,
-                                     NULL);
-
-            if(status != 0)
-            {
-                listIoctls = addIoctlList(listIoctls,
-                                          currentIoctl,
-                                          0,
-                                          j,
-                                          MAX_BUFSIZE);
-                i++;
-
-
-            }
-            if(pausebuff && nbBytes)
-            {
-                myprintf("[~] Out Buffer wrote:\n");
-                Hexdump(bufOutput,j);
-                memset(bufOutput,0, MAX_BUFSIZE);
-                myprintf("[Press enter]\n");
-                getchar();
-            }
-            nbBytes = 0;
-            /*
-            else {
-            	// DEBUG
-            	if(GetLastError() != 31)
-            		myprintf("Size = %04x -> code %d\n", j, GetLastError());
-            }
-            */
-
-        }
-        if(!i)
-        {
-            if(displayerrflg)
-                myprintf("0x%08x -> error code %03d - %s\r", currentIoctl,
-                         errorCode, errorCode2String(errorCode));
-        }
-
-
-        // Ok, the min buffer size has been found. Let's find the max size
-        else
-        {
-
-            myprintf("[~] Searching max buff |[%p]\t\t\r",currentIoctl);
-
-            for(j=MAX_BUFSIZE; j>=listIoctls->minBufferLength; j>>=1)
-            {
-
-                status = DeviceIoControl(deviceHandle,
-                                         currentIoctl,
-                                         &bufInput,
-                                         j,
-                                         &bufOutput,
-                                         j,
-                                         &nbBytes,
-                                         NULL);
-                if(status != 0)
-                    listIoctls->maxBufferLength = j;
-                if(pausebuff && nbBytes)
-                {
-                    myprintf("[~] Out Buffer wrote:\n");
-                    Hexdump(bufOutput,j);
-                    memset(bufOutput,0, MAX_BUFSIZE);
-                    myprintf("[Press enter]\n");
-                    getchar();
-                }
-                nbBytes = 0;
-
-
-            }
-            if(!i)
-                if(displayerrflg)
-                    myprintf("0x%08x -> error code %03d - %s\r", currentIoctl,
-                             errorCode, errorCode2String(errorCode));
-
-
-            /*
-            else {
-            	// If we're here, it means no min input buffer size has been found
-            	// DEBUG -----
-            	myprintf("No min bufsize found for IOCTL 0x%08x\n", currentIoctl);
-            	//listIoctls = addIoctlList(listIoctls, currentIoctl,
-            	//GetLastError(), 0, MAX_BUFSIZE);
-            	//i++;
-            }
-            */
-        }
+     getIoBuff_minmax(currentIoctl,deviceHandle,listIoctls);
     }
     myprintf("\n");
-    if(i == 0)
+    if(!getIoctlListLength(listIoctls))
     {
         if(singleflg)
-            myprintf("[!] Given IOCTL code seems not to be recognized by the driver !\n");
+            myprintf("[!] The given IOCTL code seems not to be recognized by the driver !\n");
         else
-            myprintf("[!] No valid IOCTL code has been found !\n");
-        exit(1);
+            {
+                myprintf("[!] No valid IOCTL code has been found !\n");
+                exit(1);
+            }
     }
     else
     {
         if(singleflg)
-            myprintf("[!] Given IOCTL code is recognized by the driver !\n\n");
+            myprintf("[!] The given IOCTL code is recognized by the driver !\n\n");
         else
             myprintf("[+] %d valid IOCTL have been found\n\n", i);
     }
@@ -580,9 +438,9 @@ int main(int argc, char *argv[])
 
                 status = DeviceIoControl(deviceHandle,
                                          posListIoctls->IOCTL,
-                                         (LPVOID)invalidAddresses[i>sizeof(invalidAddresses)?sizeof(invalidAddresses):i],
+                                         (LPVOID)invalidAddresses[i>sizeof(invalidAddresses)?sizeof(invalidAddresses)-1:i],
                                          randomLength,
-                                         (LPVOID)invalidAddresses[i>sizeof(invalidAddresses)?sizeof(invalidAddresses):i],
+                                         (LPVOID)invalidAddresses[i>sizeof(invalidAddresses)?sizeof(invalidAddresses)-1:i],
                                          randomLength,
                                          &nbBytes,
                                          NULL);
@@ -601,15 +459,15 @@ int main(int argc, char *argv[])
             myprintf("[0x%08x] Checking for trivial kernel overflows\n|-> [...",
                      posListIoctls->IOCTL);
 
-
-            memset(bufInput, 0x41, MAX_BUFSIZE);
-            for(i=0x100; i<=MAX_BUFSIZE; i+=0x100)
+            BYTE *jamboBuff=(BYTE *)malloc(2*MAX_BUFSIZE);
+            memset(jamboBuff, 0x41, 2*MAX_BUFSIZE);
+            for(i=1024; i<=2*MAX_BUFSIZE; i<<=1)
             {
                 if(i % 0x100 == 0)
                     myprintf(".");
                 status = DeviceIoControl(deviceHandle,
                                          posListIoctls->IOCTL,
-                                         &bufInput,
+                                         jamboBuff,
                                          i,
                                          &bufOutput,
                                          i,
@@ -624,6 +482,7 @@ int main(int argc, char *argv[])
                     getchar();
                 }
                 nbBytes = 0;
+                memset(bufOutput,0, MAX_BUFSIZE);
             }
 
             myprintf("]\n[*] End of Stage 1.\n");
@@ -697,7 +556,6 @@ int main(int argc, char *argv[])
                             {
                                 myprintf("\n[~] Out Buffer wrote:\n");
                                 Hexdump(bufOutput, nbBytes);
-                                memset(bufOutput,0, MAX_BUFSIZE);
                                 myprintf("[Press enter]\n");
                                 getchar();
                             }
@@ -846,7 +704,6 @@ int main(int argc, char *argv[])
                     {
                         myprintf("[~] Out Buffer wrote:\n");
                         Hexdump(bufOutput,nbBytes);
-                        memset(bufOutput,0, MAX_BUFSIZE);
                         myprintf("[Press enter]\n");
                         getchar();
                     }
@@ -879,6 +736,6 @@ int main(int argc, char *argv[])
             exitProgram(listIoctls);
         myprintf("\n");
     }
-    myprintf("[*] All fuzzing test finished\n");
+    myprintf("[*] All fuzzer test finished\n");
     return 0;
 }

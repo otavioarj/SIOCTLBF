@@ -1,13 +1,8 @@
-#include "utilities.h"
+#ifndef IOMAN
+#define IOMAN
 
-typedef struct IOCTLlist_ {
-	DWORD IOCTL;
-	DWORD errorCode;
-	size_t minBufferLength;
-	size_t maxBufferLength;
-	struct IOCTLlist_ *previous;
-} IOCTLlist, *pIOCTLlist;
-
+#include "ihm.h"
+extern int sckt;
 pIOCTLlist addIoctlList(pIOCTLlist listIoctls, DWORD ioctl, DWORD errorCode,
                         size_t minBufferLength, size_t maxBufferLength);
 int getIoctlListLength(pIOCTLlist listIoctls);
@@ -17,3 +12,5 @@ void printIoctl(DWORD ioctl, DWORD errorCode);
 void printIoctlList(pIOCTLlist listIoctls, size_t maxBufsize);
 void printIoctlChoice(pIOCTLlist listIoctls);
 char *transferTypeFromCode(DWORD code);
+
+#endif // IOMAN

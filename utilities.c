@@ -5,11 +5,126 @@
 #include "utilities.h"
 
 
+
 /*
 
 Utilities
 
 */
+
+
+void getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist listIoctls)
+{
+    // Determine min/max input buffer size
+    short int j;
+    DWORD nbBytes=0, status=0, errorCode=0;
+    myprintf("[~] Searching min buff |[%p]\t\t\r",currentIoctl);
+
+    for(j=4; j<MAX_BUFSIZE ; j<<=1)
+    {
+        status = DeviceIoControl(deviceHandle,
+                                 currentIoctl,
+                                 &bufInput,
+                                 j,
+                                 &bufOutput,
+                                 j,
+                                 &nbBytes,
+                                 NULL);
+
+        if(status != 0)
+            listIoctls = addIoctlList(listIoctls,
+                                      currentIoctl,
+                                      0,
+                                      j,
+                                      MAX_BUFSIZE);
+
+
+
+        if(pausebuff && nbBytes)
+        {
+            myprintf("[~] Out Buffer wrote:\n");
+            Hexdump(bufOutput,j);
+            memset(bufOutput,0, MAX_BUFSIZE);
+            myprintf("[Press enter]\n");
+            getchar();
+        }
+        nbBytes = 0;
+        /*
+        else {
+        	// DEBUG
+        	if(GetLastError() != 31)
+        		myprintf("Size = %04x -> code %d\n", j, GetLastError());
+        }
+        */
+
+    }
+    if(!getIoctlListLength(listIoctls))
+    {
+         errorCode = GetLastError();
+        if(displayerrflg)
+            myprintf("0x%08x -> error code %03d - %s\r", currentIoctl,
+                     errorCode, errorCode2String(errorCode));
+    }
+    else
+    {
+
+        myprintf("[~] Searching max buff |[%p]\t\t\r",currentIoctl);
+
+        for(j=MAX_BUFSIZE; j>=listIoctls->minBufferLength; j>>=1)
+        {
+
+            status = DeviceIoControl(deviceHandle,
+                                     currentIoctl,
+                                     &bufInput,
+                                     j,
+                                     &bufOutput,
+                                     j,
+                                     &nbBytes,
+                                     NULL);
+            if(status != 0)
+                listIoctls->maxBufferLength = j;
+            if(pausebuff && nbBytes)
+            {
+                myprintf("[~] Out Buffer wrote:\n");
+                Hexdump(bufOutput,j);
+                memset(bufOutput,0, MAX_BUFSIZE);
+                myprintf("[Press enter]\n");
+                getchar();
+            }
+            nbBytes = 0;
+
+
+        }
+
+    }
+}
+
+
+void initializeJunkData()
+{
+    int i;
+    for(i=0; i<sizeof(MYWORD); i++)
+    {
+        tableDwords[i] = ~0; // full word :)
+        tableDwords[i] <<= i*sizeof(MYWORD);
+    }
+}
+
+
+// Handler for the CTRL-C signal, used to stop an action without quitting -----
+BOOL CtrlHandler(DWORD fdwCtrlType)
+{
+    switch( fdwCtrlType )
+    {
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+        cont = FALSE;
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
 
 void myprintf( char* string, ... )
 {

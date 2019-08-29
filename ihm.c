@@ -2,11 +2,6 @@
 #include<stdlib.h>
 #include "ioctl_manipulation.h"
 
-/*
-
-IHM functions
-
-*/
 
 
 // Banner ---------------------------------------------------------------------
@@ -16,10 +11,11 @@ printf("  / ____ _____ ___ ____  /  _/ __ \\/ ___/_  __/ /    / _ )/ _/\n");
 printf(" _\\ \\/ // / _ / -_/ __/ _/ // /_/ / /__  / / / /__  / _  / _/\n");
 printf("/___/\\_,_/ .__\\__/_/   /___/\\____/\\___/ /_/ /____/ /____/_/\n");
 printf("        /_/\n");
-printf("                                                            v1.2\n\n");
+printf("                                                            v1.5\n\n");
 }
 
-
+// Globals
+int sckt;
 
 
 // Usage/Help message ---------------------------------------------------------
@@ -90,7 +86,7 @@ char *errorCode2String(DWORD errorCode) {
 }
 
 
-// https://gist.github.com/ccbrown/9722406
+
 void Hexdump (const void* data, size_t size) {
 	char ascii[17];
 	size_t i, j;

@@ -13,7 +13,7 @@
 				<Option compiler="gcc" />
 				<Option projectCompilerOptionsRelation="1" />
 				<Compiler>
-					<Add option="-Wno-pointer-to-int-cast -Wno-format -O0" />
+					<Add option="-Wno-pointer-to-int-cast -Wno-format -Os -Wno-implicit-function-declaration" />
 					<Add directory="inc" />
 				</Compiler>
 				<Linker>
@@ -47,6 +47,7 @@
 			<code_completion />
 			<envvars />
 			<debugger />
+			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
