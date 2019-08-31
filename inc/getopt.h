@@ -1,28 +1,28 @@
 /* getopt.h */
 /* Declarations for getopt.
-   Copyright (C) 1989-1994, 1996-1999, 2001 Free Software 
+   Copyright (C) 1989-1994, 1996-1999, 2001 Free Software
    Foundation, Inc. This file is part of the GNU C Library.
 
-   The GNU C Library is free software; you can redistribute 
-   it and/or modify it under the terms of the GNU Lesser 
-   General Public License as published by the Free Software 
-   Foundation; either version 2.1 of the License, or 
+   The GNU C Library is free software; you can redistribute
+   it and/or modify it under the terms of the GNU Lesser
+   General Public License as published by the Free Software
+   Foundation; either version 2.1 of the License, or
    (at your option) any later version.
 
-   The GNU C Library is distributed in the hope that it will 
-   be useful, but WITHOUT ANY WARRANTY; without even the 
-   implied warranty of MERCHANTABILITY or FITNESS FOR A 
-   PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+   The GNU C Library is distributed in the hope that it will
+   be useful, but WITHOUT ANY WARRANTY; without even the
+   implied warranty of MERCHANTABILITY or FITNESS FOR A
+   PARTICULAR PURPOSE.  See the GNU Lesser General Public
    License for more details.
 
-   You should have received a copy of the GNU Lesser General 
-   Public License along with the GNU C Library; if not, write 
+   You should have received a copy of the GNU Lesser General
+   Public License along with the GNU C Library; if not, write
    to the Free Software Foundation, Inc., 59 Temple Place,
    Suite 330, Boston, MA 02111-1307 USA.  */
 
-  
 
-  
+
+
 
 #ifndef _GETOPT_H
 
@@ -101,15 +101,15 @@ extern int optopt;
 struct option
 {
 # if (defined __STDC__ && __STDC__) || defined __cplusplus
-  const char *name;
+    const char *name;
 # else
-  char *name;
+    char *name;
 # endif
-  /* has_arg can't be an enum because some compilers complain about
-     type mismatches in all the code that assumes it is an int.  */
-  int has_arg;
-  int *flag;
-  int val;
+    /* has_arg can't be an enum because some compilers complain about
+       type mismatches in all the code that assumes it is an int.  */
+    int has_arg;
+    int *flag;
+    int val;
 };
 
 /* Names for the values of the `has_arg' field of `struct option'.  */

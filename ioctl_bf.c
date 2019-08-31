@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
-#include <time.h>
-
 
 // Program include ------------------------------------------------------------
 #include "getopt.h"
@@ -17,25 +15,8 @@
 short int displayerrflg = 0;
 short int pausebuff=0;
 short int quietflg=0;
-
-
-#ifdef _WIN64
-MYWORD tableDwords[sizeof(MYWORD)];
-MYWORD invalidAddresses[] = { 0xFFFFFFFF00000000, 0x0000000010000,0x0};
-MYWORD FuzzConstants[] = {	0x00000000, 0x00000001, 0x00000004, 0xFFFFFFFFFFFFFFFF,
-                            0x0000000010000000, 0xFFFFFFFF00000000, 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFF0,
-                            0xFFFFFFFFFFFFFFFC, 0x7000000000000000, 0x7FFEFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF,
-                            0x8000000000000000,0x4141414141414141, 0x0041004100410041,(MYWORD)tableDwords
-                         };
-#else
-MYWORD tableDwords[sizeof(WORD)];
-MYWORD invalidAddresses[] = { 0xFFFF0000, 0x00001000, 0x0};
-MYWORD FuzzConstants[] = {	0x00000000, 0x00000001, 0x00000004, 0xFFFFFFFF,
-                            0x00001000, 0xFFFF0000, 0xFFFFFFFE, 0xFFFFFFF0,
-                            0xFFFFFFFC, 0x70000000, 0x7FFEFFFF, 0x7FFFFFFF,
-                            0x80000000, 0x41414141, 0x00410041, (DWORD)tableDwords
-                         };
-#endif // _WIN64
+short int brute=0;
+short int timec=0;
 
 
 
@@ -53,33 +34,29 @@ int main(int argc, char *argv[])
     short int errflg 	 = 0;
 
     short int filteralwaysok = 0;
-    short int brute=0;
+
     short int nonull=0;
     short int stage=0;
 
     short int port=0;
-    short int timec=0;
+
     HANDLE deviceHandle;
     char  * deviceName=NULL; // "\\\\.\\";
     MYWORD  beginIoctl=0, endIoctl=0, currentIoctl=0;
     DWORD  status=0, errorCode=0;
     DWORD  nbBytes = 0;
-    BYTE *jamboBuff;
+
     pIOCTLlist listIoctls 	 = NULL;
     pIOCTLlist posListIoctls = NULL;
 
     int choice = -1;
     short int c=0, i=0,j=0;
-    MYWORD fuzzData;
 
     size_t randomLength;
     HCRYPTPROV   hCryptProv;
     time_t rawtime;
     struct tm *ltm=NULL;
     short int ptm=0,ip[4];
-
-
-
 
     // Parse options from command-line
     while((c = getopt(argc, argv, "c:d:i:r:s:q:t:nph?efb")) != -1)
@@ -196,7 +173,6 @@ int main(int argc, char *argv[])
 
     }
 
-
     // Print usage if necessary
     if(errflg)
         usage(argv[0]);
@@ -207,7 +183,6 @@ int main(int argc, char *argv[])
         myprintf("[-] Can't stream to %s:%d!\n", host,port);
     else if (host)
         myprintf("[*] Streaming to %s:%d!\n", host,port);
-
 
 
     // Open handle to the device
@@ -270,8 +245,6 @@ int main(int argc, char *argv[])
         myprintf("[~] Bruteforce function code + transfer type and determine "
                  "input sizes...\n");
 
-
-    i = 0;
     if(nonull)
         myprintf("[~] Non-null input buffer\n");
 
@@ -287,8 +260,6 @@ int main(int argc, char *argv[])
 
         if(!nonull)
         {
-
-
             myprintf("[~] Trying null pointers\r");
             status = DeviceIoControl(deviceHandle,
                                      currentIoctl,
@@ -312,7 +283,7 @@ int main(int argc, char *argv[])
 
                 // -- DEBUG
                 //if(errorCode != 87)
-                if(displayerrflg)
+                if(displayerrflg && (errorCode != ERROR_ACCESS_DENIED && errorCode != ERROR_NOT_SUPPORTED && errorCode !=ERROR_INVALID_FUNCTION || brute))
                 {
                     myprintf("0x%08x -> error code %03d - %s\r", currentIoctl,
                              errorCode, errorCode2String(errorCode));
@@ -368,7 +339,7 @@ int main(int argc, char *argv[])
                 continue;
         }
 
-     getIoBuff_minmax(currentIoctl,deviceHandle,listIoctls);
+        getIoBuff_minmax(currentIoctl,deviceHandle,listIoctls);
     }
     myprintf("\n");
     if(!getIoctlListLength(listIoctls))
@@ -376,10 +347,10 @@ int main(int argc, char *argv[])
         if(singleflg)
             myprintf("[!] The given IOCTL code seems not to be recognized by the driver !\n");
         else
-            {
-                myprintf("[!] No valid IOCTL code has been found !\n");
-                exit(1);
-            }
+        {
+            myprintf("[!] No valid IOCTL code has been found !\n");
+            exit(1);
+        }
     }
     else
     {
@@ -423,237 +394,18 @@ int main(int argc, char *argv[])
 
 
         // --------------------------------------------------------------------
-        // Stage 1: Check for invalid addresses of buffer
-        // (for method != METHOD_BUFFERED)
-        if((posListIoctls->IOCTL & 0x00000003) != 0 || brute)
-        {
-            myprintf("[0x%08x] Checking for invalid addresses of in/out buffers...\n",
-                     posListIoctls->IOCTL);
-
-            for(i=0; i<=INVALID_BUF_ADDR_ATTEMPTS; i++)
-            {
-                // Choose a random length for the buffer
-                randomLength =   posListIoctls->minBufferLength +rand() % (1+ posListIoctls->maxBufferLength - posListIoctls->minBufferLength );
-                // getrand(posListIoctls->minBufferLength,posListIoctls->maxBufferLength);
-
-                status = DeviceIoControl(deviceHandle,
-                                         posListIoctls->IOCTL,
-                                         (LPVOID)invalidAddresses[i>sizeof(invalidAddresses)?sizeof(invalidAddresses)-1:i],
-                                         randomLength,
-                                         (LPVOID)invalidAddresses[i>sizeof(invalidAddresses)?sizeof(invalidAddresses)-1:i],
-                                         randomLength,
-                                         &nbBytes,
-                                         NULL);
-                // Sleep(SLEEP_TIME);
-            }
-
-
-        }
-
-
-        // --------------------------------------------------------------------
-        // Stage 2: Check for trivial kernel overflow
+        // Stage 1: Check for trivial kernel overflow
         if(stage==1 || !stage)
-        {
-
-            myprintf("[0x%08x] Checking for trivial kernel overflows\n|-> [...",
-                     posListIoctls->IOCTL);
-
-            jamboBuff=(BYTE *)malloc(2*MAX_BUFSIZE);
-            memset(jamboBuff, 0x41, 2*MAX_BUFSIZE);
-            for(i=1024; i<=2*MAX_BUFSIZE; i<<=1)
-            {
-                if(i % 0x100 == 0)
-                    myprintf(".");
-                status = DeviceIoControl(deviceHandle,
-                                         posListIoctls->IOCTL,
-                                         jamboBuff,
-                                         i,
-                                         &bufOutput,
-                                         i,
-                                         &nbBytes,
-                                         NULL);
-                if(pausebuff && nbBytes)
-                {
-                    myprintf("[~] Out Buffer wrote:\n");
-                    Hexdump(bufOutput,i);
-                    memset(bufOutput,0, MAX_BUFSIZE);
-                    myprintf("[Press enter]\n");
-                    getchar();
-                }
-                nbBytes = 0;
-                memset(bufOutput,0, MAX_BUFSIZE);
-            }
-            free(jamboBuff);
-            myprintf("]\n[*] End of Stage 1.\n");
-        }
+            IoStage1(posListIoctls, deviceHandle);
 
 
         // --------------------------------------------------------------------
-        // Stage 3: Fuzzing with predetermined DWORDs
+        // Stage 2: Fuzzing with predetermined DWORDs
         if (stage==2 || !stage)
-        {
-            myprintf("\n[0x%08x] Fuzzing with predetermined DWORDs\n",
-                     posListIoctls->IOCTL);
-            myprintf("(Ctrl+C to pass to the next step)\n");
-            cont = TRUE;
-            if(SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE))
-            {
+            IoStage2(posListIoctls, deviceHandle, ptm);
 
-                // Fill the buffer with data from FuzzConstants (1 DWORD after 1)
-
-                for(i=posListIoctls->minBufferLength; cont && i<=posListIoctls->maxBufferLength; i+=sizeof(MYWORD))
-                {
-
-                    if(timec)
-                    {
-                        rawtime=time(NULL);
-                        ltm = localtime(&rawtime);
-                        if((ltm->tm_min - ptm)>=timec)
-                        {
-                            myprintf("[!] Max fuzzing time, aborting!\n");
-                            exit(1);
-                        }
-                    }
-                    myprintf("=> Fuzzing buffer size %d/%d\r",i, posListIoctls->maxBufferLength);
-
-                    for(j=0; cont && j<(sizeof(FuzzConstants)/sizeof(MYWORD)); j++)
-                    {
-                        c=0;
-                        do
-                        {
-                            // Choose an element into FuzzConstants
-                            if(j<15)
-                            {
-                                fuzzData=FuzzConstants[j];
-                                memset(bufInput,FuzzConstants[j],i);
-                            }
-                            else
-                            {
-                                memset(bufInput,((MYWORD *)FuzzConstants[j])[c],i);
-                                fuzzData=((MYWORD *)FuzzConstants[j])[c];
-                            }
-
-
-                            if(!quietflg)
-                                Hexdump(bufInput, i);
-                            else if(quietflg<2)
-                            {
-                                myprintf("|--> Fuzzing DWORD %d/%d with ",i, posListIoctls->maxBufferLength);
-                                myprintf("0x%p",fuzzData);
-                                myprintf(" (%d/%d)\r",j+1, sizeof(FuzzConstants)/sizeof(MYWORD));
-                            }
-
-                            status = DeviceIoControl(deviceHandle,
-                                                     posListIoctls->IOCTL,
-                                                     &bufInput,
-                                                     i,
-                                                     &bufOutput,
-                                                     posListIoctls->maxBufferLength,
-                                                     &nbBytes,
-                                                     NULL);
-                            if(pausebuff && nbBytes)
-                            {
-                                myprintf("\n[~] Out Buffer wrote:\n");
-                                Hexdump(bufOutput, nbBytes);
-                                myprintf("[Press enter]\n");
-                                getchar();
-                            }
-                            nbBytes = 0;
-
-                            if(quietflg<2)
-                            {
-                                if(status == 0)
-                                    myprintf("\nError %d: %s\n", GetLastError(),
-                                             errorCode2String(GetLastError()));
-                            }
-                            c++;
-                            memset(bufOutput,0,MAX_BUFSIZE);
-                        }
-                        while(j >14 && c<sizeof(MYWORD));
-                    }
-                }
-
-
-                myprintf("\n|--> Filling buffer with random[%d] size\n",2*(1+posListIoctls->maxBufferLength - posListIoctls->minBufferLength));
-                for(i=0; cont && i<2*(1+posListIoctls->maxBufferLength - posListIoctls->minBufferLength); i++)
-                {
-                    if(timec)
-                    {
-                        rawtime=time(NULL);
-                        ltm = localtime(&rawtime);
-                        if((ltm->tm_min - ptm)>=timec)
-                        {
-                            myprintf("[!] Max fuzzing time, aborting!\n");
-                            exit(1);
-                        }
-                    }
-                    // Choose a random length for the buffer
-                    randomLength =  posListIoctls->minBufferLength + rand() % (1+ posListIoctls->maxBufferLength - posListIoctls->minBufferLength );//getrand(posListIoctls->minBufferLength,posListIoctls->maxBufferLength);
-
-                    // Fill the whole buffer with data from FuzzConstants
-                    // memset(bufInput, 0x00, MAX_BUFSIZE);
-                    for(j=0; cont && j<(sizeof(FuzzConstants)/sizeof(MYWORD)); j++)
-                    {
-                        c=0;
-                        do
-                        {
-                            // Choose an element into FuzzConstants
-                            if(j<15)
-                            {
-                                memset(bufInput,FuzzConstants[j],randomLength);
-                                fuzzData=FuzzConstants[j];
-                            }
-                            else
-                            {
-                                memset(bufInput,((MYWORD *)FuzzConstants[j])[c],randomLength);
-                                fuzzData=((MYWORD *)FuzzConstants[j])[c];
-                            }
-
-                            if(!quietflg)
-                                Hexdump(bufInput, randomLength);
-                            else if(quietflg<2)
-                                myprintf("|---> Random In-buffer %d bytes with 0x%p. (%d/%d)\r",randomLength,fuzzData,j+1, sizeof(FuzzConstants)/sizeof(MYWORD));
-
-
-                            status = DeviceIoControl(deviceHandle,
-                                                     posListIoctls->IOCTL,
-                                                     &bufInput,
-                                                     randomLength,
-                                                     &bufOutput,
-                                                     posListIoctls->maxBufferLength,
-                                                     &nbBytes,
-                                                     NULL);
-                            if(pausebuff && nbBytes)
-                            {
-                                myprintf("[~] Out Buffer wrote:\n");
-                                Hexdump(bufOutput,nbBytes);
-                                myprintf("[Press enter]\n");
-                                getchar();
-                            }
-
-                            if(quietflg<2)
-                                if(status == 0)
-                                    myprintf("\nError %d: %s\n", GetLastError(), errorCode2String(GetLastError()));
-                            c++;
-                            memset(bufOutput,0,MAX_BUFSIZE);
-                        }
-                        while(j >14 && c<sizeof(MYWORD));
-                    }
-
-                    //Sleep(SLEEP_TIME);
-                }
-
-            }
-            else
-            {
-                myprintf("[!] Error: could not set control handler.");
-                exit(1);
-            }
-            myprintf("\n[*] End of Stage 2.\n");
-        }
         // --------------------------------------------------------------------
-        // Stage 4: Fuzzing with fully random data
+        // Stage 3: Fuzzing with fully random data
         if(stage==3 || !stage)
         {
             myprintf("\n\n[0x%08x] Fuzzing with fully random data and buffer size...\n",

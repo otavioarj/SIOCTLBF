@@ -71,16 +71,15 @@
 	"getopt.h"
 	<string.h>
 
-1567040525 source:d:\dropbox\win\projetos\ioctl\ihm.c
+1567050179 source:d:\dropbox\win\projetos\ioctl\ihm.c
 	<stdio.h>
 	<stdlib.h>
 	"ioctl_manipulation.h"
 
-1567048860 source:d:\dropbox\win\projetos\ioctl\ioctl_bf.c
+1567216464 source:d:\dropbox\win\projetos\ioctl\ioctl_bf.c
 	<stdio.h>
 	<stdlib.h>
 	<wchar.h>
-	<time.h>
 	"getopt.h"
 	"utilities.h"
 
@@ -92,7 +91,7 @@
 1489588410 source:d:\dropbox\win\projetos\ioctl\rng.c
 	<stdio.h>
 
-1567041569 source:d:\dropbox\win\projetos\ioctl\utilities.c
+1567216359 source:d:\dropbox\win\projetos\ioctl\utilities.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -105,15 +104,16 @@
 1567040277 d:\dropbox\win\projetos\ioctl\inc\ioctl_manipulation.h
 	"ihm.h"
 
-1567041434 d:\dropbox\win\projetos\ioctl\inc\ihm.h
+1567109764 d:\dropbox\win\projetos\ioctl\inc\ihm.h
 	<winsock2.h>
 	<WINDOWS.h>
 	<Wincrypt.h>
 	<winioctl.h>
 	<winerror.h>
 
-1567041946 d:\dropbox\win\projetos\ioctl\inc\utilities.h
+1567108477 d:\dropbox\win\projetos\ioctl\inc\utilities.h
 	"ioctl_manipulation.h"
+	<time.h>
 
 1537929941 d:\dropbox\win\projetos\ioctl\sock.h
 	<winsock2.h>

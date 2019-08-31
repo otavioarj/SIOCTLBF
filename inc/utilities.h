@@ -3,6 +3,7 @@
 
 
 #include "ioctl_manipulation.h"
+#include <time.h>
 #define BUFLEN 4096  //Max length of UDP buffer
 
 
@@ -28,17 +29,10 @@ extern MYWORD FuzzConstants[];
 
 
 
-// Junk data used for fuzzing
-
-
-
-BOOL cont;
-struct sockaddr_in si_opts;
-extern short int quietflg;
-
 // Functions
 void myprintf( char* string, ... );
 void getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist listIoctls);
+void IoStage1(pIOCTLlist posListIoctls, HANDLE deviceHandle);
 int socket_init(char * server,int port);
 char *substr(char *src, int pos, int len);
 void initializeJunkData();

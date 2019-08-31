@@ -14,19 +14,21 @@ This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with ki
  _\ \/ // / _ / -_/ __/ _/ // /_/ / /__  / / / /__  / _  / _/
 /___/\_,_/ .__\__/_/   /___/\____/\___/ /_/ /____/ /____/_/
         /_/
-                                                            v1.2
+                                                            v1.5
 
 [*] Usage:
-  IoCTL.exe -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] 
-  [-t <time>] [-n] [-b] [-u] [-f] [-e]
+  Sioctlbf.exe -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e]
 
 [*] Options:
     -------
     -b  Ignore most errors and buffer checking and continue anyway.
     -c  Stream (UDP) to remote:port the stdout during fuzzing.
     -d  Symbolic device name (without \\.\).
-    -e  Display error codes during IOCTL codes scanning.
-    -f  Filter out IOCTLs with no buffer length restriction.
+    -e  Display error codes during IOCTL scanning.
+         -> Except: NOT_SUPPORTED
+                    ACCESS_DENIED
+                    INVALID_FUNCTION
+    -f  Filter IOCTLs always successful independently of buffer length
     -h  Display this help.
     -i  IOCTL code used as reference for scanning.
     -n  Doesn't use NULL pointer or buffers.
@@ -53,4 +55,4 @@ This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with ki
      > Sioctlbf.exe -d deviceName -i 00004000  -q 1
 
     Fuzzing only a given IOCTL (stage 3 only):
-     > Sioctlbf.exe -d deviceName -i 00004000 -s 3  
+     > Sioctlbf.exe -d deviceName -i 00004000 -s 3

@@ -12,16 +12,23 @@
 // Globals
 extern short int displayerrflg;
 extern short int pausebuff;
+extern short int brute;
+BOOL cont;
+struct sockaddr_in si_opts;
+extern short int quietflg;
+extern short int timec;
+// Todo: buffer safe for multi-threads :P
 BYTE  bufInput[MAX_BUFSIZE];
 BYTE  bufOutput[MAX_BUFSIZE];
 
 
-typedef struct IOCTLlist_ {
-	DWORD IOCTL;
-	DWORD errorCode;
-	size_t minBufferLength;
-	size_t maxBufferLength;
-	struct IOCTLlist_ *previous;
+typedef struct IOCTLlist_
+{
+    DWORD IOCTL;
+    DWORD errorCode;
+    size_t minBufferLength;
+    size_t maxBufferLength;
+    struct IOCTLlist_ *previous;
 } IOCTLlist, *pIOCTLlist;
 
 void banner();
