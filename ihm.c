@@ -12,7 +12,7 @@ void banner()
     printf(" _\\ \\/ // / _ / -_/ __/ _/ // /_/ / /__  / / / /__  / _  / _/\n");
     printf("/___/\\_,_/ .__\\__/_/   /___/\\____/\\___/ /_/ /____/ /____/_/\n");
     printf("        /_/\n");
-    printf("                                                            v1.5\n\n");
+    printf("                                                            v1.6\n\n");
 }
 
 // Globals
@@ -24,7 +24,7 @@ void usage(char *progName)
 {
     banner();
     printf("[*] Usage:\n");
-    printf("  %s -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e]\n\n",progName);
+    printf("  %s -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e] [-v]\n\n",progName);
     printf("[*] Options:                                                           \n");
     printf("    -------                                                           \n");
     printf("    -b	Ignore most errors and buffer checking and continue anyway.   \n");
@@ -37,16 +37,17 @@ void usage(char *progName)
     printf("    -f 	Filter IOCTLs always successful independently of buffer length\n");
     printf("    -h	Display this help.                                           \n");
     printf("    -i	IOCTL code used as reference for scanning.                   \n");
-    printf("    -n	Doesn't use NULL pointer or buffers.                         \n");
+    printf("    -n	Don't use NULL pointer or buffers.                         \n");
     printf("    -p	Pause and hexdump if out buffer was wrote.                   \n");
     printf("    -q	Quiet level: 1 - don't display hexdumps when fuzzing         \n");
     printf("                     2 - don't display any extra info                \n");
     printf("                     3 - display *only* critical/error info          \n");
     printf("    -r 	IOCTL codes range (format: 00004000-00008000) to fuzz.       \n");
-    printf("    -s	Only execute given stage: 1 - trivial buffer overflow       \n");
+    printf("    -s	Only execute given stage: 1 - trivial buffer data and overflows\n");
     printf("                                  2 - predetermined buffer data     \n");
     printf("                                  3 - random buffer data            \n");
     printf("    -t	Max time in minutes for fuzzing.                            \n");
+    printf("    -v  Use valid buffers address when testing buffer length        \n");
     printf("\n\n");
     printf("[*] Examples:                                                          \n");
     printf("    --------                                                          \n");
@@ -69,7 +70,7 @@ void exitProgram(pIOCTLlist listIoctls)
     myprintf("\n[~] Exiting ...\n");
     freeIoctlList(listIoctls);
     closesocket(sckt);
-    exit(1);
+    exit(0);
 }
 
 

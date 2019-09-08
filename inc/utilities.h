@@ -31,11 +31,12 @@ extern MYWORD FuzzConstants[];
 
 // Functions
 void myprintf( char* string, ... );
-void getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist listIoctls);
+pIOCTLlist getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist listIoctls);
 void IoStage1(pIOCTLlist posListIoctls, HANDLE deviceHandle);
 int socket_init(char * server,int port);
 char *substr(char *src, int pos, int len);
 void initializeJunkData();
 BOOL CtrlHandler(DWORD fdwCtrlType);
+MYWORD GetKernelBase();
 
 #endif // UTILS

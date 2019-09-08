@@ -13,11 +13,11 @@
 				<Option compiler="gcc" />
 				<Option projectCompilerOptionsRelation="1" />
 				<Compiler>
-					<Add option="-Wno-pointer-to-int-cast -Wno-format -Os -Wno-implicit-function-declaration" />
+					<Add option="-Wno-pointer-to-int-cast -Wno-format -Os -Wno-implicit-function-declaration -Wall" />
 					<Add directory="inc" />
 				</Compiler>
 				<Linker>
-					<Add option="-s -lws2_32" />
+					<Add option="-lws2_32 -s" />
 				</Linker>
 			</Target>
 		</Build>

@@ -17,49 +17,38 @@ short int pausebuff=0;
 short int quietflg=0;
 short int brute=0;
 short int timec=0;
+short int valid=0;
 
 
 
 // Main function --------------------------------------------------------------
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
-
-
     extern char *optarg;
-    //char *deviceSymbolicName = NULL;
     char *singleIoctl		 = NULL;
     char *rangeIoctl		 = NULL;
     char *host               = NULL;
     short int singleflg  = 0;
     short int errflg 	 = 0;
-
     short int filteralwaysok = 0;
-
     short int nonull=0;
     short int stage=0;
-
     short int port=0;
 
     HANDLE deviceHandle;
-    char  * deviceName=NULL; // "\\\\.\\";
+    char  * deviceName=NULL;
     MYWORD  beginIoctl=0, endIoctl=0, currentIoctl=0;
     DWORD  status=0, errorCode=0;
     DWORD  nbBytes = 0;
-
     pIOCTLlist listIoctls 	 = NULL;
     pIOCTLlist posListIoctls = NULL;
-
     int choice = -1;
     short int c=0, i=0,j=0;
-
-    size_t randomLength;
-    HCRYPTPROV   hCryptProv;
     time_t rawtime;
-    struct tm *ltm=NULL;
     short int ptm=0,ip[4];
 
     // Parse options from command-line
-    while((c = getopt(argc, argv, "c:d:i:r:s:q:t:nph?efb")) != -1)
+    while((c = getopt(argc, argv, "c:d:i:r:s:q:t:nph?efbv")) != -1)
     {
         switch(c)
         {
@@ -132,6 +121,9 @@ int main(int argc, char *argv[])
         case 'p':
             pausebuff++;
             break;
+        case 'v':
+            valid++;
+            break;
         case 'h':
         case '?':
             errflg++;
@@ -173,7 +165,7 @@ int main(int argc, char *argv[])
 
     }
 
-    // Print usage if necessary
+
     if(errflg)
         usage(argv[0]);
     else
@@ -184,9 +176,8 @@ int main(int argc, char *argv[])
     else if (host)
         myprintf("[*] Streaming to %s:%d!\n", host,port);
 
-
     // Open handle to the device
-    myprintf("[*] Openning handle to the device %s ... \n", deviceName);
+    myprintf("[*] Openning handle to the device: %s \n", deviceName);
     deviceHandle = CreateFile((HANDLE)deviceName,
                               GENERIC_READ | GENERIC_WRITE,
                               0,
@@ -214,9 +205,9 @@ int main(int argc, char *argv[])
 
 
     // Print summary
-    myprintf("  Summary                             	\n");
-    myprintf("  -------								\n");
-    myprintf("  IOCTL scanning mode 	: ");
+    myprintf("    Summary:\n");
+    myprintf("    -------------------------\n");
+    myprintf("    IOCTL scanning mode   : ");
     if(rangeIoctl)
         myprintf("Range mode 0x%08x - 0x%08x\n", beginIoctl, endIoctl);
     else if(singleIoctl && singleflg)
@@ -224,40 +215,32 @@ int main(int argc, char *argv[])
     else
         myprintf("Function + transfer type bf 0x%08x - 0x%08x\n",
                  beginIoctl, endIoctl);
-    myprintf("  Filter mode           : ");
+    myprintf("    Filter mode           : ");
     if(filteralwaysok)
         myprintf("Filtering codes that return true for all buffer sizes\n");
     else
         myprintf("Filter disabled\n");
 
-    myprintf("  Symbolic Device Name  : %s\n", deviceName);
+    myprintf("    Symbolic Device Name  : %s\n", deviceName);
     if(singleIoctl)
-        myprintf("  Device Type    	: 0x%08x\n",
+        myprintf("    Device Type           : 0x%08x\n",
                  (beginIoctl & 0xffff0000) >> 16);
-    myprintf("  Device handle         : 0x%08x\n", deviceHandle);
-    myprintf("\n");
+    myprintf("    Device handle         : 0x%08x\n\n", deviceHandle);
 
-
-    // IOCTL code scanning
     if(singleIoctl && singleflg)
         myprintf("[~] Test given IOCTL and determine input size...\n");
     else
-        myprintf("[~] Bruteforce function code + transfer type and determine "
-                 "input sizes...\n");
+        myprintf("[~] Bruteforce function code + transfer type and determine input sizes...\n");
 
     if(nonull)
         myprintf("[~] Non-null input buffer\n");
 
+    if(valid)
+        myprintf("[~] Using valid memory address inside in-buffer\n");
+
+    // IOCTL code scanning
     for(currentIoctl = beginIoctl; currentIoctl<=endIoctl; currentIoctl++)
     {
-
-        /*	if(!singleflg && !displayerrflg && currentIoctl % 0x400 == 0)
-        		myprintf(".");
-        		*/
-
-        // DeviceIoControl: if the operation completes successfully, the
-        // return value is nonzero
-
         if(!nonull)
         {
             myprintf("[~] Trying null pointers\r");
@@ -280,14 +263,9 @@ int main(int argc, char *argv[])
             if(status == 0)
             {
                 errorCode = GetLastError();
-
-                // -- DEBUG
-                //if(errorCode != 87)
-                if(displayerrflg && (errorCode != ERROR_ACCESS_DENIED && errorCode != ERROR_NOT_SUPPORTED && errorCode !=ERROR_INVALID_FUNCTION || brute))
-                {
+                if((displayerrflg && errorCode != ERROR_ACCESS_DENIED && errorCode != ERROR_NOT_SUPPORTED && errorCode !=ERROR_INVALID_FUNCTION) && brute)
                     myprintf("0x%08x -> error code %03d - %s\r", currentIoctl,
                              errorCode, errorCode2String(errorCode));
-                }
 
                 //myprintf("0x%08x -> code %d\n", currentIoctl, errorCode);
                 // errorCode == ERROR_INVALID_FUNCTION ||
@@ -339,7 +317,8 @@ int main(int argc, char *argv[])
                 continue;
         }
 
-        getIoBuff_minmax(currentIoctl,deviceHandle,listIoctls);
+        listIoctls=getIoBuff_minmax(currentIoctl,deviceHandle,listIoctls);
+
     }
     myprintf("\n");
     if(!getIoctlListLength(listIoctls))
@@ -347,10 +326,10 @@ int main(int argc, char *argv[])
         if(singleflg)
             myprintf("[!] The given IOCTL code seems not to be recognized by the driver !\n");
         else
-        {
             myprintf("[!] No valid IOCTL code has been found !\n");
-            exit(1);
-        }
+
+        exit(1);
+
     }
     else
     {
@@ -381,9 +360,8 @@ int main(int argc, char *argv[])
             scanf_s("%d", &choice, 3);
 
             if(choice < 0 || choice >= getIoctlListLength(listIoctls))
-                continue;
+                goto exit;
         }
-
 
         posListIoctls = getIoctlListElement(listIoctls, choice);
 
@@ -392,102 +370,23 @@ int main(int argc, char *argv[])
         myprintf("[*] Fuzzing IOCTL 0x%08x     \n", posListIoctls->IOCTL);
         myprintf("   ------------------------ \n");
 
-
-        // --------------------------------------------------------------------
         // Stage 1: Check for trivial kernel overflow
         if(stage==1 || !stage)
             IoStage1(posListIoctls, deviceHandle);
 
-
-        // --------------------------------------------------------------------
         // Stage 2: Fuzzing with predetermined DWORDs
         if (stage==2 || !stage)
             IoStage2(posListIoctls, deviceHandle, ptm);
 
-        // --------------------------------------------------------------------
         // Stage 3: Fuzzing with fully random data
         if(stage==3 || !stage)
-        {
-            myprintf("\n\n[0x%08x] Fuzzing with fully random data and buffer size...\n",
-                     posListIoctls->IOCTL);
-            myprintf("(Ctrl+C to STOP)\n[*] This will run FOR EVER ;)\n\n");
-            cont = TRUE;
-            if(SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE))
-            {
-                while(cont)
-                {
-                    if(timec)
-                    {
-                        rawtime=time(NULL);
-                        ltm = localtime(&rawtime);
-                        //myprintf("\n[!] I %d A %d M %d   \n",ptm,ltm->tm_min,ltm->tm_min - ptm);
-                        if((ltm->tm_min - ptm)>=timec)
-                        {
-                            myprintf("[!] Max fuzzing time, aborting!\n");
-                            exit(1);
-                        }
-                    }
-                    // Choose a random length for the buffer
-                    randomLength = posListIoctls->minBufferLength +rand() % (1+ posListIoctls->maxBufferLength - posListIoctls->minBufferLength );
-
-                    // Fill the buffer with random data
-                    if(!CryptGenRandom(hCryptProv,randomLength,bufInput))
-                        for(i=0; i<randomLength; i++)
-                            bufInput[i] = (BYTE)rand()% 0xff;
-
-                    if(!quietflg)
-                        Hexdump(bufInput, posListIoctls->maxBufferLength);
-                    else if(quietflg<2)
-                    {
-                        myprintf("Input buffer: %d (0x%x) bytes\r", randomLength,randomLength);
-
-                    }
-
-                    status = DeviceIoControl(deviceHandle,
-                                             posListIoctls->IOCTL,
-                                             &bufInput,
-                                             randomLength,
-                                             &bufOutput,
-                                             randomLength,
-                                             &nbBytes,
-                                             NULL);
-
-                    if(pausebuff && nbBytes)
-                    {
-                        myprintf("[~] Out Buffer wrote:\n");
-                        Hexdump(bufOutput,nbBytes);
-                        myprintf("[Press enter]\n");
-                        getchar();
-                    }
-
-                    if(quietflg<2)
-                    {
-                        if(status == 0)
-                            myprintf("\nError %d: %s\n", GetLastError(),
-                                     errorCode2String(GetLastError()));
-                    }
-
-                    memset(bufOutput,0,MAX_BUFSIZE);
-                }
-            }
-            else
-            {
-                myprintf("[!] Error: could not set control handler.");
-                exit(1);
-            }
-        }
-
-
-        // --------------------------------------------------------------------
-
-
+            IoStage3(posListIoctls, deviceHandle, ptm);
 
         myprintf("[0x%08x] Fuzzing finished\n",posListIoctls->IOCTL);
-        myprintf("[?] Continue ? (y/n)");
-        if(getch() != 'y')
+exit:
+        myprintf("[?] Exit fuzzer? (y/n)");
+        if(getch() == 'y')
             exitProgram(listIoctls);
         myprintf("\n");
     }
-    myprintf("[*] All fuzzer test finished\n");
-    return 0;
 }

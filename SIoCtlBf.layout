@@ -2,39 +2,9 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Release" />
-	<File name="inc\utilities.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="715" topLine="2" />
-		</Cursor>
-	</File>
-	<File name="inc\ioctl_manipulation.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="50" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="utilities.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="11296" topLine="259" />
-		</Cursor>
-	</File>
-	<File name="getopt.c" open="1" top="1" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="17533" topLine="453" />
-		</Cursor>
-	</File>
 	<File name="ihm.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1467" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="ioctl_bf.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="9579" topLine="313" />
-		</Cursor>
-	</File>
-	<File name="inc\ihm.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="280" topLine="0" />
+			<Cursor1 position="4131" topLine="139" />
 		</Cursor>
 	</File>
 	<File name="inc\getopt.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -42,9 +12,44 @@
 			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
+	<File name="inc\ihm.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1803" topLine="34" />
+		</Cursor>
+	</File>
+	<File name="ioctl_bf.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="12592" topLine="350" />
+		</Cursor>
+	</File>
+	<File name="inc\utilities.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="601" topLine="2" />
+		</Cursor>
+	</File>
+	<File name="inc\ioctl_manipulation.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2683" topLine="50" />
+		</Cursor>
+	</File>
+	<File name="getopt.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="17533" topLine="453" />
+		</Cursor>
+	</File>
+	<File name="utilities.c" open="1" top="1" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="19270" topLine="85" />
+		</Cursor>
+		<Folding>
+			<Collapse line="29" />
+			<Collapse line="108" />
+			<Collapse line="282" />
+		</Folding>
+	</File>
 	<File name="ioctl_manipulation.c" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3166" topLine="51" />
+			<Cursor1 position="3851" topLine="121" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
