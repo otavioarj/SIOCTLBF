@@ -14,10 +14,10 @@ This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with ki
  _\ \/ // / _ / -_/ __/ _/ // /_/ / /__  / / / /__  / _  / _/
 /___/\_,_/ .__\__/_/   /___/\____/\___/ /_/ /____/ /____/_/
         /_/
-                                                            v1.5
+                                                            v1.6
 
 [*] Usage:
-  Sioctlbf.exe -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e]
+ Sioctlbf.exe -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e] [-v]
 
 [*] Options:
     -------
@@ -31,16 +31,17 @@ This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with ki
     -f  Filter IOCTLs always successful independently of buffer length
     -h  Display this help.
     -i  IOCTL code used as reference for scanning.
-    -n  Doesn't use NULL pointer or buffers.
+    -n  Don't use NULL pointer or buffers.
     -p  Pause and hexdump if out buffer was wrote.
     -q  Quiet level: 1 - don't display hexdumps when fuzzing
                      2 - don't display any extra info
                      3 - display *only* critical/error info
     -r  IOCTL codes range (format: 00004000-00008000) to fuzz.
-    -s  Only execute given stage: 1 - trivial buffer overflow
+    -s  Only execute given stage: 1 - trivial buffer data and overflows
                                   2 - predetermined buffer data
                                   3 - random buffer data
     -t  Max time in minutes for fuzzing.
+    -v  Use valid buffers address when testing buffer length
 
 
 [*] Examples:
