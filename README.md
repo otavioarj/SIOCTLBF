@@ -4,9 +4,9 @@
 This is an extended and rewritten version (32 & 64 bits) of the IOCTL fuzzer by [koutto](https://github.com/koutto/ioctlbf). 
 Fundamentally all the test cases and the fuzzer engine was altered to match my needs of performance and resilience, e.g., the fuzzer can report the last operation before a kernel panic (a.k.a Blue Screen of Death). 
 
-A tiny UDP client was written to stream all fuzzer output before dispatching the IOCLT. Among other changes, it has a timed and guided test case tunning, including output analysis; which can detect some kind of leaking from kernel side :P.
+A tiny UDP client was written to stream all fuzzer output before dispatching the IOCLT. Among other changes, it has a timed and guided test case tunning, including output analysis; which can detect some kind of leaking from kernel side :P. This fuzzer helped me into CVE2018-8060 and CVE2018-8061 \o/, use it with kindness! 
 
-This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with kindness!
+Since **v.1.8** a private entity convinced me to add particular functionalities in a private release. These functionalities will remain out of public releases unless prior contact is made with me.
 
 ```
    ____                   ________  _____________     ___  ___
