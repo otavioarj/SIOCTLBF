@@ -1,6 +1,3 @@
-
-
-
 // System includes ------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,11 +15,13 @@ short int quietflg=0;
 short int brute=0;
 short int timec=0;
 short int valid=0;
-
+short int limit=0;
+short int dlimit=0;
+short int stage=0;
 
 
 // Main function --------------------------------------------------------------
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     extern char *optarg;
     char *singleIoctl		 = NULL;
@@ -32,7 +31,6 @@ void main(int argc, char *argv[])
     short int errflg 	 = 0;
     short int filteralwaysok = 0;
     short int nonull=0;
-    short int stage=0;
     short int port=0;
 
     HANDLE deviceHandle;
@@ -48,7 +46,7 @@ void main(int argc, char *argv[])
     short int ptm=0,ip[4];
 
     // Parse options from command-line
-    while((c = getopt(argc, argv, "c:d:i:r:s:q:t:nph?efbv")) != -1)
+    while((c = getopt(argc, argv, "c:d:i:r:s:q:t:l:nph?efbv")) != -1)
     {
         switch(c)
         {
@@ -120,11 +118,22 @@ void main(int argc, char *argv[])
             break;
         case 'p':
             pausebuff++;
+            break;  
+            
+        case 'l':
+            limit=atoi(optarg);
+            if(limit<=0)
+            {
+                myprintf("[-] Invalid rate:%d\n",limit);
+                exit(1);
+            }
+            dlimit=limit;
+
             break;
+		case 'h':
         case 'v':
             valid++;
             break;
-        case 'h':
         case '?':
             errflg++;
         }
@@ -231,12 +240,12 @@ void main(int argc, char *argv[])
         myprintf("[~] Test given IOCTL and determine input size...\n");
     else
         myprintf("[~] Bruteforce function code + transfer type and determine input sizes...\n");
-
     if(nonull)
         myprintf("[~] Non-null input buffer\n");
-
     if(valid)
         myprintf("[~] Using valid memory address inside in-buffer\n");
+    if(limit)
+        myprintf("[~] Limiting the output into 1/%d messages\n",limit);
 
     // IOCTL code scanning
     for(currentIoctl = beginIoctl; currentIoctl<=endIoctl; currentIoctl++)
@@ -263,14 +272,10 @@ void main(int argc, char *argv[])
             if(status == 0)
             {
                 errorCode = GetLastError();
-                if((displayerrflg && errorCode != ERROR_ACCESS_DENIED && errorCode != ERROR_NOT_SUPPORTED && errorCode !=ERROR_INVALID_FUNCTION) && brute)
+                if((displayerrflg && errorCode != ERROR_ACCESS_DENIED && errorCode != ERROR_NOT_SUPPORTED && errorCode !=ERROR_INVALID_FUNCTION))
                     myprintf("0x%08x -> error code %03d - %s\r", currentIoctl,
                              errorCode, errorCode2String(errorCode));
-
-                //myprintf("0x%08x -> code %d\n", currentIoctl, errorCode);
-                // errorCode == ERROR_INVALID_FUNCTION ||
-                if((errorCode == ERROR_ACCESS_DENIED    ||
-                        errorCode == ERROR_NOT_SUPPORTED || errorCode==0x87)&& !brute)
+                else if(!brute)
                     continue;
             }
         }
@@ -356,7 +361,7 @@ void main(int argc, char *argv[])
         {
             myprintf("[?] Choose an IOCTL to fuzz...\n");
             printIoctlChoice(listIoctls);
-            myprintf("Choice : ");
+            myprintf("[*] Choice: ");
             scanf_s("%d", &choice, 3);
 
             if(choice < 0 || choice >= getIoctlListLength(listIoctls))
@@ -389,4 +394,5 @@ exit:
             exitProgram(listIoctls);
         myprintf("\n");
     }
+    return 1;
 }

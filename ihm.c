@@ -12,7 +12,7 @@ void banner()
     printf(" _\\ \\/ // / _ / -_/ __/ _/ // /_/ / /__  / / / /__  / _  / _/\n");
     printf("/___/\\_,_/ .__\\__/_/   /___/\\____/\\___/ /_/ /____/ /____/_/\n");
     printf("        /_/\n");
-    printf("                                                            v1.6\n\n");
+    printf("                                                            v1.8 public\n\n");
 }
 
 // Globals
@@ -24,7 +24,7 @@ void usage(char *progName)
 {
     banner();
     printf("[*] Usage:\n");
-    printf("  %s -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e] [-v]\n\n",progName);
+    printf("  %s -d <deviceName> -i <code>/-r <code>-<code> [-b] [-c <remote:port>] [-e] [-f] [-h <file>] [-l <rate>] [-n] [-p] [-q <mode>] [-s <stage>] [-t <time>] [-u] [-v]\n\n",progName);
     printf("[*] Options:                                                           \n");
     printf("    -------                                                           \n");
     printf("    -b	Ignore most errors and buffer checking and continue anyway.   \n");
@@ -34,10 +34,10 @@ void usage(char *progName)
     printf("         -> Except: NOT_SUPPORTED                                    \n");
     printf("                    ACCESS_DENIED                                    \n");
     printf("                    INVALID_FUNCTION                                 \n");
-    printf("    -f 	Filter IOCTLs always successful independently of buffer length\n");
-    printf("    -h	Display this help.                                           \n");
+    printf("    -f 	Filter IOCTLs always successful independently of buffer length\n");   
     printf("    -i	IOCTL code used as reference for scanning.                   \n");
-    printf("    -n	Don't use NULL pointer or buffers.                         \n");
+    printf("    -l	Rate of out-messages to suppress after Step 1. Ex: 100 means only 1/100 msgs will be printed.\n");
+    printf("    -n	Don't use NULL pointer or buffers.                           \n");
     printf("    -p	Pause and hexdump if out buffer was wrote.                   \n");
     printf("    -q	Quiet level: 1 - don't display hexdumps when fuzzing         \n");
     printf("                     2 - don't display any extra info                \n");

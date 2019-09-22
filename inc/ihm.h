@@ -49,6 +49,9 @@ struct sockaddr_in si_opts;
 extern short int quietflg;
 extern short int timec;
 extern short int valid;
+extern short int limit;
+extern short int dlimit;
+extern short int stage;
 
 // Todo: buffer safe for multi-threads :P
 BYTE  bufInput[MAX_BUFSIZE];

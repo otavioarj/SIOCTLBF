@@ -34,10 +34,10 @@ void IoStage3(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
     time_t rawtime;
     struct tm *ltm=NULL;
     void * inter_buff=bufOutput;
-
-    myprintf("\n\n[0x%08x] Fuzzing with fully random data and buffer size...\n",
+    myprintf("[*] Stage 3.\n");
+    myprintf("[0x%08x] Fuzzing with fully random data and buffer size...\n (Ctrl+C to STOP)\n",
              posListIoctls->IOCTL);
-    myprintf("(Ctrl+C to STOP)\n[*] This will run FOR EVER ;)\n\n");
+    myprintf("[*] This will run FOR EVER ;)\n\n");
     cont = TRUE;
     if(SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE))
     {
@@ -63,10 +63,10 @@ void IoStage3(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
                 for(i=0; i<randomLength; i++)
                     bufInput[i] = (BYTE)rand()% 0xff;
 
-            if(!quietflg)
+            if(quietflg<2)
+              myprintf("Input buffer: %d (0x%x) bytes\r", randomLength,randomLength);
+             if(!quietflg)
                 Hexdump(bufInput, posListIoctls->maxBufferLength);
-            else if(quietflg<2)
-                myprintf("Input buffer: %d (0x%x) bytes\r", randomLength,randomLength);
 
             if(METHOD_FROM_CTL_CODE(posListIoctls->IOCTL) == METHOD_IN_DIRECT)
                 inter_buff=&bufInput;
@@ -91,7 +91,7 @@ void IoStage3(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
             if(quietflg<2)
             {
                 if(status == 0)
-                    myprintf("\nError %d: %s\n", GetLastError(),
+                    myprintf("\n [-] Error %d: %s\n", GetLastError(),
                              errorCode2String(GetLastError()));
             }
 
@@ -116,9 +116,10 @@ void IoStage2(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
     struct tm *ltm=NULL;
     void * inter_buff=bufOutput;
 
-    myprintf("\n[0x%08x] Fuzzing with predetermined WORDs\n",
+    myprintf("[*] Stage 2.\n");
+    myprintf("[0x%08x] Fuzzing with predetermined WORDs\n (Ctrl+C to pass to the next step)",
              posListIoctls->IOCTL);
-    myprintf("(Ctrl+C to pass to the next step)\n");
+
     cont = TRUE;
     if(SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE))
     {
@@ -158,13 +159,13 @@ void IoStage2(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
                     }
 
 
-                    if(!quietflg)
-                        Hexdump(bufInput, i);
-                    else if(quietflg<2)
+                    if(quietflg<2)
                     {
                         myprintf("|--> Fuzzing DWORD %d/%d with ",i, posListIoctls->maxBufferLength);
                         myprintf("0x%p",fuzzData);
                         myprintf(" (%d/%d)\r",j+1, sizeof(FuzzConstants)/sizeof(MYWORD));
+                        if(!quietflg)
+                         Hexdump(bufInput, i);
                     }
 
                     if(METHOD_FROM_CTL_CODE(posListIoctls->IOCTL) == METHOD_IN_DIRECT)
@@ -190,7 +191,7 @@ void IoStage2(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
                     if(quietflg<2)
                     {
                         if(status == 0)
-                            myprintf("\nError %d: %s\n", GetLastError(),
+                            myprintf("[-] Error %d: %s\n", GetLastError(),
                                      errorCode2String(GetLastError()));
                     }
 
@@ -236,10 +237,10 @@ void IoStage2(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
                         fuzzData=((MYWORD *)FuzzConstants[j])[c];
                     }
 
+                    if(quietflg<2)
+                     myprintf("|---> Random In-buffer %d bytes with 0x%p. (%d/%d)\r",randomLength,fuzzData,j+1, sizeof(FuzzConstants)/sizeof(MYWORD));
                     if(!quietflg)
                         Hexdump(bufInput, randomLength);
-                    else if(quietflg<2)
-                        myprintf("|---> Random In-buffer %d bytes with 0x%p. (%d/%d)\r",randomLength,fuzzData,j+1, sizeof(FuzzConstants)/sizeof(MYWORD));
 
                     if(METHOD_FROM_CTL_CODE(posListIoctls->IOCTL) == METHOD_IN_DIRECT)
                         inter_buff=&bufInput;
@@ -260,7 +261,7 @@ void IoStage2(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
                     }
                     nbBytes=0;
                     if(quietflg<2 && status == 0)
-                        myprintf("\nError %d: %s\n", GetLastError(), errorCode2String(GetLastError()));
+                        myprintf("[-] Error %d: %s\n", GetLastError(), errorCode2String(GetLastError()));
                     c++;
                     memset(bufOutput,0,MAX_BUFSIZE);
                 }
@@ -276,7 +277,7 @@ void IoStage2(pIOCTLlist posListIoctls, HANDLE deviceHandle, short int ptm)
         myprintf("[!] Error: could not set control handler.");
         exit(1);
     }
-    myprintf("\n[*] End of Stage 2.\n");
+    myprintf("\n[*] End of Stage 2.\n\n");
 }
 
 void IoStage1(pIOCTLlist posListIoctls, HANDLE deviceHandle)
@@ -287,7 +288,7 @@ void IoStage1(pIOCTLlist posListIoctls, HANDLE deviceHandle)
     MYWORD validAddr[2];
     int i;
     void * inter_buff=bufOutput;
-
+    myprintf("[*] Stage 1.\n");
     if(METHOD_FROM_CTL_CODE(posListIoctls->IOCTL) != METHOD_BUFFERED || brute)
     {
         myprintf("[0x%08x] Checking for invalid addresses of in/out buffers...\n", posListIoctls->IOCTL);
@@ -365,7 +366,7 @@ void IoStage1(pIOCTLlist posListIoctls, HANDLE deviceHandle)
     }
 
 
-    myprintf("[0x%08x] Checking for trivial kernel overflows\n|-> [...",posListIoctls->IOCTL);
+    myprintf("[0x%08x] Checking for trivial kernel overflows\n  |-> ...",posListIoctls->IOCTL);
     jamboBuff=(BYTE *)malloc(2*MAX_BUFSIZE);
     memset(jamboBuff, 0x41, 2*MAX_BUFSIZE);
 
@@ -396,7 +397,10 @@ void IoStage1(pIOCTLlist posListIoctls, HANDLE deviceHandle)
         memset(bufOutput,0, MAX_BUFSIZE);
     }
     free(jamboBuff);
-    myprintf("]\n[*] End of Stage 1.\n");
+    myprintf("..\n");
+    myprintf("\n[*] End of Stage 1.\n\n");
+    if(limit)
+        limit++;
 }
 
 pIOCTLlist getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist listIoctls)
@@ -444,6 +448,8 @@ pIOCTLlist getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist 
                                       MAX_BUFSIZE);
             myprintf("[%p] Brute adding min buff [%d]-> error: %03d - %s\n",currentIoctl,j,errorCode,errorCode2String(errorCode));
         }
+        else if(displayerrflg)
+              myprintf("[%p] Error: %03d - %s\n",currentIoctl,errorCode,errorCode2String(errorCode));
 
         if(pausebuff && nbBytes)
         {
@@ -480,6 +486,8 @@ pIOCTLlist getIoBuff_minmax(DWORD currentIoctl, HANDLE deviceHandle, pIOCTLlist 
                 myprintf("[%p] Brute adding max buff [%d] -> error: %03d - %s\n",currentIoctl,j,errorCode,errorCode2String(errorCode));
                 listIoctls->maxBufferLength = j;
             }
+             else if(displayerrflg)
+              myprintf("[%p] Error: %03d - %s\n",currentIoctl,errorCode,errorCode2String(errorCode));
 
             if(pausebuff && nbBytes)
             {
@@ -530,6 +538,24 @@ void myprintf( char* string, ... )
     va_start( args, string );
     char log[BUFLEN];
 
+    if(limit>dlimit)
+    {
+        if(!dlimit)
+            dlimit=limit+1;
+        else if(string[0]!='[' && string[1]!='[')
+        {
+            dlimit--;
+            va_end( args );
+            return;
+        }
+    }
+
+    if(quietflg==2 && string[0]!='['  && string[1]!='[')
+    {
+        va_end( args );
+        return;
+    }
+
     if (quietflg==3 && (strstr(string, "rror") == NULL || strstr(string, "[!]") == NULL) )
     {
         va_end( args );
@@ -553,7 +579,7 @@ void myprintf( char* string, ... )
     va_end( args );
 }
 
-char *substr(char *src, int pos, int len)
+/*char *substr(char *src, int pos, int len)
 {
     char *dest = NULL;
     if (len>0)
@@ -565,7 +591,7 @@ char *substr(char *src, int pos, int len)
         }
     }
     return dest;
-}
+}*/
 
 
 int socket_init(char * server,int port)
