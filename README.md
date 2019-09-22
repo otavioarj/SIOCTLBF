@@ -14,10 +14,10 @@ This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with ki
  _\ \/ // / _ / -_/ __/ _/ // /_/ / /__  / / / /__  / _  / _/
 /___/\_,_/ .__\__/_/   /___/\____/\___/ /_/ /____/ /____/_/
         /_/
-                                                            v1.6
+                                                            v1.8 public
 
 [*] Usage:
- Sioctlbf.exe -d <deviceName> -i <code>/-r <code>-<code>  [-s <stage>] [-c <remote:port>] [-q <mode>] [-t <time>] [-n] [-b] [-u] [-f] [-e] [-v]
+  Sioctlbf.exe -d <deviceName> -i <code>/-r <code>-<code> [-b] [-c <remote:port>] [-e] [-f] [-h <file>] [-l <rate>] [-n] [-p] [-q <mode>] [-s <stage>] [-t <time>] [-u] [-v]
 
 [*] Options:
     -------
@@ -29,8 +29,8 @@ This fuzzer **helped me** into CVE2018-8060 and CVE2018-8061 \o/, use it with ki
                     ACCESS_DENIED
                     INVALID_FUNCTION
     -f  Filter IOCTLs always successful independently of buffer length
-    -h  Display this help.
     -i  IOCTL code used as reference for scanning.
+    -l  Rate of out-messages to suppress after Step 1. Ex: 100 means only 1/100 msgs will be printed.
     -n  Don't use NULL pointer or buffers.
     -p  Pause and hexdump if out buffer was wrote.
     -q  Quiet level: 1 - don't display hexdumps when fuzzing
